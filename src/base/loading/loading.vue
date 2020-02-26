@@ -1,7 +1,7 @@
 <template>
   <div class="loading">
-    <img src="./loading.gif" width="24" height="24">
-    <p class="desc">{{title}}</p>
+    <img src="./loading.gif" width="24" height="24" />
+    <p class="desc">{{ title }}</p>
   </div>
 </template>
 <script type='text/ecmascript-6'>
@@ -15,12 +15,12 @@ export default {
 }
 </script>
 <style lang='stylus' rel='stylesheet/stylus'>
-  @import "~common/stylus/variable"
-  .loading
-    width: 100%
-    text-align: center
-    .desc
-      line-height: 20px
-      font-size: $font-size-small
-      color: $color-text-l
+@import '~common/stylus/variable'
+.loading
+  width 100%
+  text-align center
+  .desc
+    line-height 20px
+    font-size $font-size-small
+    color $color-text-l
 </style>

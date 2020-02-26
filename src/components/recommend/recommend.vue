@@ -136,8 +136,8 @@ export default {
               .desc
                 color $color-text-d
     .loading-container
-      position: absolute;
-      width: 100%;
-      top: 50%;
-      transform: translateY(-50%); // 实现垂直居中
+      position absolute
+      width 100%
+      top 50%
+      transform translateY(-50%) // 实现垂直居中
 </style>

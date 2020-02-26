@@ -18,6 +18,10 @@ export default {
     data: {
       type: Array,
       default: null
+    },
+    listenScroll: {
+      type: Boolean,
+      default: false
     }
   },
   mounted () {
@@ -34,6 +38,12 @@ export default {
         probeType: this.probeType,
         click: this.click
       })
+      if (this.listenScroll) {
+        const _this = this
+        this.scroll.on('scroll', pos => {
+          _this.$emit('scroll', pos)
+        })
+      }
     },
     // 代理如下方法
     enable () {
@@ -44,6 +54,13 @@ export default {
     },
     refresh () {
       this.scroll && this.scroll.refresh()
+    },
+    scrollTo () {
+      // 为了传入arguments，使用apply方法
+      this.scroll && this.scroll.scrollTo.apply(this.scroll, arguments)
+    },
+    scrollToElement () {
+      this.scroll && this.scroll.scrollToElement.apply(this.scroll, arguments)
     }
   },
   watch: {
@@ -55,5 +72,4 @@ export default {
   }
 }
 </script>
-<style lang='stylus' rel='stylesheet/stylus'>
-</style>
+<style lang='stylus' rel='stylesheet/stylus'></style>
