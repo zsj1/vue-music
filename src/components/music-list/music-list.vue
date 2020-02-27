@@ -6,7 +6,7 @@
     <h1 class="title" v-html="title"></h1>
     <div class="bg-image" :style="bgStyle" ref="bgImage">
       <div class="play-wrapper">
-        <div class="play" v-show="songs.length && playShow">
+        <div class="play" v-show="songs.length && playShow" ref="playBtn" @click="random">
           <i class="icon-play"></i>
           <span class="text">随机播放全部</span>
         </div>
@@ -25,11 +25,15 @@
       ref="list"
     >
       <div class="song-list-wrapper">
-        <song-list :songs="songs"></song-list>
+        <song-list
+          :songs="songs"
+          @select="selectItem"
+        ></song-list>
       </div>
-      <div v-show="!songs.length" class="loading-container">
+      <div v-show="!songs.length && loadingFlag" class="loading-container">
         <loading></loading>
       </div>
+      <div v-show="!loadingFlag" class="tips-container">该歌手目前没有免费歌曲哦。</div>
     </scroll>
   </div>
 </template>
@@ -38,6 +42,7 @@ import SongList from 'base/song-list/song-list'
 import Scroll from 'base/scroll/scroll'
 import Loading from 'base/loading/loading'
 import { prefixStyle } from 'common/js/dom'
+import { mapActions } from 'vuex'
 
 const RESERVED_HEIGHT = 40
 const transform = prefixStyle('transform')
@@ -58,6 +63,10 @@ export default {
     bgImage: {
       type: String,
       default: ''
+    },
+    loadingFlag: {
+      type: Boolean,
+      default: true
     }
   },
   data () {
@@ -81,7 +90,22 @@ export default {
     },
     back () {
       this.$router.back()
-    }
+    },
+    selectItem (item, index) {
+      this.selectPlay({
+        list: this.songs,
+        index: index
+      })
+    },
+    random () {
+      this.randomPlay({
+        list: this.songs
+      })
+    },
+    ...mapActions([
+      'selectPlay',
+      'randomPlay'
+    ])
   },
   computed: {
     bgStyle () {
@@ -214,4 +238,8 @@ export default {
       width 100%
       top 50%
       transform translateY(-50%) // 实现垂直居中
+    .tips-container
+      text-align center
+      font-size $font-size-medium-x
+      color $color-text-d
 </style>

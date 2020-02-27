@@ -88,7 +88,7 @@ export default {
       })
       return [...hot, ...ret]
     },
-    ...mapMutations({
+    ...mapMutations({ // mapMutations 工具函数会将 store 中的 commit 方法映射到组件的 methods 中
       setSinger: 'SET_SINGER'
     })
   },
