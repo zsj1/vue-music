@@ -22,6 +22,10 @@ export default {
     listenScroll: {
       type: Boolean,
       default: false
+    },
+    pullup: {
+      type: Boolean,
+      default: false
     }
   },
   mounted () {
@@ -38,10 +42,20 @@ export default {
         probeType: this.probeType,
         click: this.click
       })
+      // 是否开启滚动监听
       if (this.listenScroll) {
         const _this = this
         this.scroll.on('scroll', pos => {
           _this.$emit('scroll', pos)
+        })
+      }
+      // 是否开启上拉刷新
+      if (this.pullup) {
+        const _this = this
+        this.scroll.on('scrollEnd', () => {
+          if (this.scroll.y <= this.scroll.maxScrollY + 50) {
+            _this.$emit('scrollToEnd')
+          }
         })
       }
     },

@@ -83,6 +83,22 @@ module.exports = {
           console.log(e)
         })
       })
+      app.get('/api/search', function (req, res) {
+        const url = 'https://c.y.qq.com/soso/fcgi-bin/client_search_cp'
+        axios.get(url, {
+          params: req.query,
+          headers: {
+            Origin: 'https://y.qq.com',
+            referer: 'https://y.qq.com/portal/search.html',
+            'Sec-Fetch-Mode': 'cors',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36'
+          }
+        }).then((response) => {
+          res.json(response.data)
+        }).catch((e) => {
+          console.log(e)
+        })
+      })
       app.get('/api/songList/:name', function (req, res) {
         // const url = `https://c.y.qq.com/soso/fcgi-bin/client_search_cp?p=1&n=10&w=${req.params.name}`
         const url = 'https://c.y.qq.com/soso/fcgi-bin/client_search_cp'
