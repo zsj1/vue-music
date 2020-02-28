@@ -27,6 +27,7 @@
       <div class="song-list-wrapper">
         <song-list
           :songs="songs"
+          :rank="rank"
           @select="selectItem"
         ></song-list>
       </div>
@@ -45,7 +46,7 @@ import { prefixStyle } from 'common/js/dom'
 import { mapActions } from 'vuex'
 import { playListMixin } from 'common/js/mixin'
 
-const RESERVED_HEIGHT = 40
+const RESERVED_HEIGHT = 40 // 顶部预留空间
 const transform = prefixStyle('transform')
 const backdrop = prefixStyle('backdropFilter')
 
@@ -69,6 +70,10 @@ export default {
     loadingFlag: {
       type: Boolean,
       default: true
+    },
+    rank: {
+      type: Boolean,
+      default: false
     }
   },
   data () {
@@ -120,6 +125,7 @@ export default {
     }
   },
   watch: {
+    // 滚动的时候监听的scrollY
     scrollY (newY) {
       const translateY = Math.max(this.minTranslateY, newY)
       let zIndex = 0
@@ -127,10 +133,10 @@ export default {
       let blur = 0 // 背景图片高斯模糊效果
       this.$refs.layer.style[transform] = `translate3d(0, ${translateY}px, 0)`
       const percent = Math.abs(newY / this.imageHeight) // scale计算方法
-      if (newY > 0) {
+      if (newY > 0) { // 下拉歌单时候背景图片放大比例
         scale = 1 + percent
         zIndex = 10
-      } else {
+      } else { // 上滑高斯模糊效果
         blur = Math.min(20 * percent, 20)
       }
       this.$refs.filter.style[backdrop] = `blur(${blur}px)` // 只有ios手机才有高斯模糊
@@ -158,7 +164,7 @@ export default {
   }
 }
 </script>
-<style lang='stylus' rel='stylesheet/stylus'>
+<style scoped lang='stylus' rel='stylesheet/stylus'>
 @import '~common/stylus/variable'
 @import '~common/stylus/mixin'
 .music-list

@@ -19,12 +19,40 @@ module.exports = {
   devServer: {
     before (app) {
       app.get('/api/getDiscList', function (req, res) {
-        const url = 'https://c.y.qq.com/splcloud/fcgi-bin/fcg_get_diss_by_tag.fcg'
+        // 新的url
+        const url = 'https://u.y.qq.com/cgi-bin/musicu.fcg'
+        // const url = 'https://c.y.qq.com/splcloud/fcgi-bin/fcg_get_diss_by_tag.fcg'
         axios.get(url, {
           headers: {
-            referer: 'https://c.y.qq.com/',
-            host: 'c.y.qq.com'
+            Origin: 'https://y.qq.com',
+            referer: 'https://y.qq.com/portal/search.html',
+            'Sec-Fetch-Mode': 'cors',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36'
           },
+          // headers: {
+          //   referer: 'https://c.y.qq.com/',
+          //   host: 'c.y.qq.com'
+          // },
+          params: req.query
+        }).then((response) => {
+          res.json(response.data)
+        }).catch((e) => {
+          console.log(e)
+        })
+      })
+      app.get('/api/getDiscSongList/:tid', function (req, res) {
+        const url = 'https://c.y.qq.com/qzone/fcg-bin/fcg_ucc_getcdinfo_byids_cp.fcg'
+        axios.get(url, {
+          headers: {
+            Origin: 'https://y.qq.com',
+            referer: `https://y.qq.com/n/yqq/playlist/${req.params.tid}.html`,
+            'Sec-Fetch-Mode': 'cors',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36'
+          },
+          // headers: {
+          //   referer: 'https://c.y.qq.com/',
+          //   host: 'c.y.qq.com'
+          // },
           params: req.query
         }).then((response) => {
           res.json(response.data)

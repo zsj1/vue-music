@@ -18,13 +18,18 @@
         <div class="recommend-list">
           <h1 class="list-title">热门歌单推荐</h1>
           <ul>
-            <li v-for="(item, index) in distList" :key="index" class="item">
+            <li
+              v-for="(item, index) in distList"
+              :key="index"
+              class="item"
+              @click="selectItem(item)"
+            >
               <div class="icon">
                 <img v-lazy="item.imgurl" width="60" height="60" />
               </div>
               <div class="text">
-                <h2 class="name" v-html="item.creator.name"></h2>
-                <p class="desc" v-html="item.dissname"></p>
+                <h2 class="name" v-html="item.title"></h2>
+                <p class="desc" v-html="item.desc"></p>
               </div>
             </li>
           </ul>
@@ -34,6 +39,9 @@
         <loading></loading>
       </div>
     </scroll>
+    <transition name="slide">
+      <router-view></router-view>
+    </transition>
   </div>
 </template>
 <script type="text/ecmascript-6">
@@ -43,6 +51,8 @@ import Loading from 'base/loading/loading'
 import { getRecommend, getDiscList } from 'api/recommend'
 import { ERR_OK } from 'api/config'
 import { playListMixin } from 'common/js/mixin'
+import { mapMutations } from 'vuex'
+import Disc from 'common/js/disc'
 
 export default {
   name: 'recommend',
@@ -63,6 +73,12 @@ export default {
       this.$refs.recommend.style.bottom = bottom
       this.$refs.scroll.refresh()
     },
+    selectItem (item) {
+      this.$router.push({
+        path: `/recommend/${item.tid}`
+      })
+      this.setDisc(item)
+    },
     _getRecommend () {
       getRecommend().then(res => {
         if (res.code === ERR_OK) {
@@ -73,9 +89,32 @@ export default {
     _getDiscList () {
       getDiscList().then(res => {
         if (res.code === ERR_OK) {
-          this.distList = res.data.list
+          // this.distList = res.data.list
+          this.distList = this._normalizeDiscs(res.playlist.data.v_playlist)
+          // console.log(this.distList)
         }
       })
+    },
+    _normalizeDiscs (list) {
+      const ret = []
+      list.forEach((item) => {
+        ret.push(new Disc({
+          tid: item.tid,
+          title: item.title,
+          desc: this._getAccessNum(item.access_num),
+          imgurl: item.cover_url_small
+        }))
+      })
+      return ret
+    },
+    _getAccessNum (num) {
+      const intNum = parseInt(num)
+      if (intNum < 10000) {
+        return `播放量：${num}`
+      } else {
+        const reNum = (num / 10000).toFixed(1)
+        return `播放量：${reNum}万`
+      }
     },
     loadImage () {
       // 为了确保轮播图的任意一张图片加载完成，撑开高度
@@ -84,7 +123,10 @@ export default {
         this.$refs.scroll.refresh()
         this.checkLoaded = true
       }
-    }
+    },
+    ...mapMutations({
+      setDisc: 'SET_DISC'
+    })
   },
   components: {
     Slider,
@@ -93,7 +135,7 @@ export default {
   }
 }
 </script>
-<style lang="stylus" rel="stylesheet/stylus">
+<style scoped lang="stylus" rel="stylesheet/stylus">
 @import '~common/stylus/variable'
 .recommend
   position fixed
@@ -148,4 +190,8 @@ export default {
       width 100%
       top 50%
       transform translateY(-50%) // 实现垂直居中
+  .slide-enter-active, .slide-leave-active
+    transition all 0.3s
+  .slide-enter, .slide-leave-to
+    transform translate3d(100%, 0, 0)
 </style>
