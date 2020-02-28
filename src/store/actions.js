@@ -10,13 +10,14 @@ function findIndex (list, song) {
 }
 
 export const selectPlay = function ({ state, commit }, { list, index }) {
-  commit(types.SET_SEQUENCE_LIST, list)
+  const copyList = list.slice()
+  commit(types.SET_SEQUENCE_LIST, copyList)
   if (state.mode === playMode.random) {
-    const randomlist = shuffle(list)
+    const randomlist = shuffle(copyList)
     commit(types.SET_PLAYLIST, randomlist)
-    index = findIndex(randomlist, list[index])
+    index = findIndex(randomlist, copyList[index])
   } else {
-    commit(types.SET_PLAYLIST, list)
+    commit(types.SET_PLAYLIST, copyList)
   }
   commit(types.SET_CURRENT_INDEX, index)
   commit(types.SET_FULL_SCREEN, true)
@@ -24,9 +25,10 @@ export const selectPlay = function ({ state, commit }, { list, index }) {
 }
 
 export const randomPlay = function ({ commit }, { list }) {
+  const copyList = list.slice()
   commit(types.SET_PLAY_MODE, playMode.random)
-  commit(types.SET_SEQUENCE_LIST, list)
-  const randomlist = shuffle(list)
+  commit(types.SET_SEQUENCE_LIST, copyList)
+  const randomlist = shuffle(copyList)
   commit(types.SET_PLAYLIST, randomlist)
   commit(types.SET_CURRENT_INDEX, 0)
   commit(types.SET_FULL_SCREEN, true)
