@@ -43,20 +43,22 @@ export default {
     _normalizeSongs (list) {
       const ret = []
       list.forEach((item) => {
-        getSongVkey(item.mid).then((res) => {
-          const purl = res.req_0.data.midurlinfo[0].purl
-          if (item.id && item.album.mid && purl) {
-            ret.push(createSong({
-              songid: item.id,
-              songmid: item.mid,
-              singer: item.singer,
-              songname: item.name,
-              albumname: item.album.name,
-              interval: item.interval,
-              albummid: item.album.mid
-            }, purl))
-          }
-        })
+        if (item.id && item.album.mid) {
+          getSongVkey(item.mid).then((res) => {
+            const purl = res.req_0.data.midurlinfo[0].purl
+            if (purl) {
+              ret.push(createSong({
+                songid: item.id,
+                songmid: item.mid,
+                singer: item.singer,
+                songname: item.name,
+                albumname: item.album.name,
+                interval: item.interval,
+                albummid: item.album.mid
+              }, purl))
+            }
+          })
+        }
       })
       if (ret.length === 0) {
         this.loadingFlag = false

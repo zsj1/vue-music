@@ -42,14 +42,16 @@ export default {
       const ret = []
       list.forEach((item) => {
         const data = item.data
-        getSongVkey(data.strMediaMid).then((res) => {
-          if (res.req_0.data.midurlinfo.length > 0) {
-            const purl = res.req_0.data.midurlinfo[0].purl ? res.req_0.data.midurlinfo[0].purl : ''
-            if (data.songid && data.albummid && purl) {
-              ret.push(createSong(data, purl))
+        if (data.songid && data.albummid) {
+          getSongVkey(data.strMediaMid).then((res) => {
+            if (res.req_0.data.midurlinfo.length > 0) {
+              const purl = res.req_0.data.midurlinfo[0].purl ? res.req_0.data.midurlinfo[0].purl : ''
+              if (purl) {
+                ret.push(createSong(data, purl))
+              }
             }
-          }
-        })
+          })
+        }
       })
       if (ret.length === 0) {
         this.loadingFlag = false

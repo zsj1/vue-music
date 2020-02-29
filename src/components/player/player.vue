@@ -492,8 +492,15 @@ export default {
       //   this.$refs.audio.play()
       //   this.getLyric()
       // })
-      // 这里是防止手机后台运行导致的songReady无法变为true，实际测试后台的话还是有问题
-      setTimeout(() => {
+      // 这里是防止手机后台运行导致的songReady无法变为true
+      if (this.currentLyric) {
+        this.currentLyric.stop()
+        this.currentTime = 0
+        this.playingLyric = ''
+        this.currentLineNum = 0
+      }
+      clearTimeout(this.timer)
+      this.timer = setTimeout(() => {
         this.$refs.audio.play()
         this.getLyric()
       }, 1000)

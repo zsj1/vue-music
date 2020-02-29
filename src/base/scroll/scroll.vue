@@ -26,6 +26,18 @@ export default {
     pullup: {
       type: Boolean,
       default: false
+    },
+    pulldown: {
+      type: Boolean,
+      default: false
+    },
+    beforeScroll: {
+      type: Boolean,
+      default: false
+    },
+    refreshDelay: {
+      type: Number,
+      default: 20
     }
   },
   mounted () {
@@ -49,13 +61,29 @@ export default {
           _this.$emit('scroll', pos)
         })
       }
-      // 是否开启上拉刷新
+      // 是否开启上拉加载
       if (this.pullup) {
         const _this = this
         this.scroll.on('scrollEnd', () => {
           if (this.scroll.y <= this.scroll.maxScrollY + 50) {
             _this.$emit('scrollToEnd')
           }
+        })
+      }
+      // 是否开启下拉刷新
+      if (this.pulldown) {
+        const _this = this
+        this.scroll.on('touchEnd', (pos) => {
+          if (pos.y > 40) {
+            _this.$emit('pulldown')
+          }
+        })
+      }
+      // 是否开启上拉动作监听
+      if (this.beforeScroll) {
+        const _this = this
+        this.scroll.on('beforeScrollStart', () => {
+          _this.$emit('beforeScroll')
         })
       }
     },
@@ -81,7 +109,7 @@ export default {
     data () {
       setTimeout(() => {
         this.refresh()
-      }, 20)
+      }, this.refreshDelay)
     }
   }
 }

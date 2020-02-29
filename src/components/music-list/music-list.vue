@@ -34,7 +34,7 @@
       <div v-show="!songs.length && loadingFlag" class="loading-container">
         <loading></loading>
       </div>
-      <div v-show="!loadingFlag" class="tips-container">该歌手目前没有免费歌曲哦。</div>
+      <div v-show="!loadingFlag && !timeFlag" class="tips-container">这里目前没有免费歌曲哦。</div>
     </scroll>
   </div>
 </template>
@@ -79,7 +79,8 @@ export default {
   data () {
     return {
       scrollY: 0,
-      playShow: true
+      playShow: true,
+      timeFlag: true
     }
   },
   created () {
@@ -87,9 +88,15 @@ export default {
     this.listenScroll = true
   },
   mounted () {
+    this.timeFlag = true
     this.imageHeight = this.$refs.bgImage.clientHeight
     this.minTranslateY = -this.imageHeight + RESERVED_HEIGHT
     this.$refs.list.$el.style.top = `${this.imageHeight}px`
+    // 这里解决方案还是有问题，正规做好还是要把外部组件的normalizeSongs的用Promise封装为同步方法
+    // 暂时是加了个1000毫秒的延迟，1000毫秒之后loadingFlag如果还为false则显示没有歌曲
+    setTimeout(() => {
+      this.timeFlag = false
+    }, 1000)
   },
   methods: {
     handlePlayList (playList) {
