@@ -1,5 +1,6 @@
 <template>
   <transition name="confirm-fade">
+    <!-- 让confirm更独立，不向外冒泡 -->
     <div class="confirm" v-show="showFlag" @click.stop>
       <div class="confirm-wrapper">
         <div class="confirm-content">

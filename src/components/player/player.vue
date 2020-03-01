@@ -114,11 +114,14 @@
             ></i>
           </progress-circle>
         </div>
-        <div class="control">
+        <div class="control" @click.stop="showPlayList">
           <i class="icon-playlist"></i>
         </div>
       </div>
     </transition>
+    <play-list
+      ref="playList"
+    ></play-list>
     <audio
       ref="audio"
       :src="currentSong.url"
@@ -130,20 +133,22 @@
   </div>
 </template>
 <script type='text/ecmascript-6'>
-import { mapGetters, mapMutations } from 'vuex'
+import { mapGetters, mapMutations, mapActions } from 'vuex'
 import animations from 'create-keyframe-animation'
 import { prefixStyle } from 'common/js/dom'
 import ProgressBar from 'base/progress-bar/progress-bar'
 import ProgressCircle from 'base/progress-circle/progress-circle'
 import Scroll from 'base/scroll/scroll'
 import { playMode } from 'common/js/config'
-import { shuffle } from 'common/js/util'
 import Lyric from 'lyric-parser'
+import PlayList from 'components/play-list/play-list'
+import { playerMixin } from 'common/js/mixin'
 
 const transform = prefixStyle('transform')
 const transitionDuration = prefixStyle('transitionDuration')
 
 export default {
+  mixins: [playerMixin],
   data () {
     return {
       songReady: false, // 防止用户过快的一直点击
@@ -152,7 +157,8 @@ export default {
       currentLyric: null,
       currentLineNum: 0,
       currentShow: 'cd',
-      palyingLyric: ''
+      palyingLyric: '',
+      playListShow: false
     }
   },
   created () {
@@ -175,27 +181,17 @@ export default {
     percent () {
       return this.currentTime / this.currentSong.duration
     },
-    iconMode () {
-      return this.mode === playMode.sequence
-        ? 'icon-sequence'
-        : this.mode === playMode.loop
-          ? 'icon-loop'
-          : 'icon-random'
-    },
     ...mapGetters([
       'fullScreen',
-      'playList',
-      'currentSong',
-      'sequenceList',
       'playing',
-      'currentIndex',
-      'mode'
+      'currentIndex'
     ])
   },
   components: {
     ProgressBar,
     ProgressCircle,
-    Scroll
+    Scroll,
+    PlayList
   },
   methods: {
     back () {
@@ -249,6 +245,9 @@ export default {
         this.currentLyric.togglePlay()
       }
     },
+    showPlayList () {
+      this.$refs.playList.show()
+    },
     next () {
       if (!this.songReady) {
         return
@@ -288,6 +287,7 @@ export default {
     ready () {
       // 歌曲OK
       this.songReady = true
+      this.savePlayHistory(this.currentSong)
     },
     error () {
       // 歌曲加载失败
@@ -325,19 +325,6 @@ export default {
       if (this.currentLyric) {
         this.currentLyric.seek(currentTime * 1000)
       }
-    },
-    changeMode () {
-      const mode = (this.mode + 1) % 3
-      this.setPlayMode(mode)
-      let list = null
-      if (mode === playMode.random) {
-        list = shuffle(this.sequenceList)
-      } else {
-        list = shuffle(this.sequenceList)
-      }
-      // 保证切换模式的时候歌曲不变
-      this._resetCurrentIndex(list)
-      this.setPlayList(list)
     },
     getLyric () {
       this.currentSong.getLyric().then(lyric => {
@@ -442,12 +429,6 @@ export default {
       this.$refs.middleL.style[transitionDuration] = `${time}ms`
       this.touch.initiated = false
     },
-    _resetCurrentIndex (list) {
-      const index = list.findIndex(item => {
-        return item.id === this.currentSong.id
-      })
-      this.setCurrentIndex(index)
-    },
     _pad (num, n = 2) {
       let len = num.toString().length
       while (len < n) {
@@ -472,15 +453,18 @@ export default {
       }
     },
     ...mapMutations({
-      setFullScreen: 'SET_FULL_SCREEN',
-      setPlayState: 'SET_PLAYING_STATE',
-      setCurrentIndex: 'SET_CURRENT_INDEX',
-      setPlayMode: 'SET_PLAY_MODE',
-      setPlayList: 'SET_PLAYLIST'
-    })
+      setFullScreen: 'SET_FULL_SCREEN'
+    }),
+    ...mapActions([
+      'savePlayHistory'
+    ])
   },
   watch: {
     currentSong (newSong, oldSong) {
+      // 如果没有歌曲了
+      if (!newSong.id) {
+        return
+      }
       // 防止转换播放模式后导致原本暂停的歌曲重新播放了
       if (newSong.id === oldSong.id) {
         return
@@ -488,22 +472,23 @@ export default {
       if (this.currentLyric) {
         this.currentLyric.stop()
       }
-      // this.$nextTick(() => {
-      //   this.$refs.audio.play()
-      //   this.getLyric()
-      // })
-      // 这里是防止手机后台运行导致的songReady无法变为true
       if (this.currentLyric) {
         this.currentLyric.stop()
         this.currentTime = 0
         this.playingLyric = ''
         this.currentLineNum = 0
       }
-      clearTimeout(this.timer)
-      this.timer = setTimeout(() => {
+      this.$nextTick(() => {
         this.$refs.audio.play()
         this.getLyric()
-      }, 1000)
+      })
+      // 这里是防止手机后台运行导致的songReady无法变为true
+      // 实测不太好用，有可能还没渲染好久执行了开始，导致开始和暂停按钮出现问题
+      // clearTimeout(this.timer)
+      // this.timer = setTimeout(() => {
+      //   this.$refs.audio.play()
+      //   this.getLyric()
+      // }, 1000)
     },
     playing (newPlaying) {
       const audio = this.$refs.audio
