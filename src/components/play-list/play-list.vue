@@ -26,7 +26,7 @@
               <i class="current" :class="getCurrentIcon(item)"></i>
               <span class="text">{{ item.name }}</span>
               <span class="like">
-                <i class="icon-not-favorite"></i>
+                <i :class="getFavoriteIcon(item)" @click.stop="toggleFavorite(item)"></i>
               </span>
               <span class="delete" @click.stop="deleteOne(item)">
                 <i class="icon-delete"></i>
@@ -224,6 +224,8 @@ export default {
           margin-right 15px
           font-size 12px
           color $color-theme
+          .icon-favorite
+            color $color-sub-theme
         .delete
           position relative
           font-size 12px

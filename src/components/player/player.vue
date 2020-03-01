@@ -83,7 +83,7 @@
               <i @click="next" class="icon-next"></i>
             </div>
             <div class="icon i-right">
-              <i class="icon-not-favorite"></i>
+              <i :class="getFavoriteIcon(currentSong)" @click="toggleFavorite(currentSong)"></i>
             </div>
           </div>
         </div>
@@ -125,7 +125,7 @@
     <audio
       ref="audio"
       :src="currentSong.url"
-      @canplay="ready"
+      @play="ready"
       @error="error"
       @timeupdate="updateTime"
       @ended="end"
@@ -254,6 +254,7 @@ export default {
       }
       if (this.playList.length === 1) { // 边界情况，歌单只有一首歌
         this.loop()
+        return // 这里不return的话，会导致只有一首歌的时候songReady卡在false
       } else {
         let index = this.currentIndex + 1
         if (index === this.playList.length) {
@@ -272,6 +273,7 @@ export default {
       }
       if (this.playList.length === 1) { // 边界情况，歌单只有一首歌
         this.loop()
+        return // 这里不return的话，会导致只有一首歌的时候songReady卡在false
       } else {
         let index = this.currentIndex - 1
         if (index === -1) {
@@ -328,6 +330,10 @@ export default {
     },
     getLyric () {
       this.currentSong.getLyric().then(lyric => {
+        // 解决了异步获取歌词的问题
+        if (this.currentSong.lyric !== lyric) {
+          return
+        }
         this.currentLyric = new Lyric(lyric, this.handleLyric)
         if (this.playing) {
           this.currentLyric.play()
@@ -478,14 +484,20 @@ export default {
         this.playingLyric = ''
         this.currentLineNum = 0
       }
-      this.$nextTick(() => {
-        this.$refs.audio.play()
-        this.getLyric()
-      })
+      // this.$nextTick(() => {
+      //   this.$refs.audio.play()
+      //   this.getLyric()
+      // })
       // 这里是防止手机后台运行导致的songReady无法变为true
-      // 实测不太好用，有可能还没渲染好久执行了开始，导致开始和暂停按钮出现问题
-      // clearTimeout(this.timer)
-      // this.timer = setTimeout(() => {
+      clearTimeout(this.timer)
+      this.timer = setTimeout(() => {
+        this.$refs.audio.play()
+        this.getLyric() // 异步操作会导致歌词混乱
+      }, 1000)
+      // 下面代码有问题，因为歌曲ready后就会去执行playing，ready的时间可能会小于1秒
+      // 解决方案是先给setTimeout设置一个timer防止多次运行，然后把audio的oncanplay事件换成onplay事件
+      // oncanplay事件是歌曲缓冲好了就可以执行 而onplay事件是我们已经去执行play方法了才可以执行
+      // setTimeout(() => {
       //   this.$refs.audio.play()
       //   this.getLyric()
       // }, 1000)

@@ -6,16 +6,19 @@ function resolve (dir) {
 }
 
 module.exports = {
-//   css: {
-//     loaderOptions: {
-//       stylus: {
-//         'resolve url': true,
-//         import: [
-//           './src/theme'
-//         ]
-//       }
-//     }
-//   },
+  // build: {
+  //   port: 9000
+  // },
+  //   css: {
+  //     loaderOptions: {
+  //       stylus: {
+  //         'resolve url': true,
+  //         import: [
+  //           './src/theme'
+  //         ]
+  //       }
+  //     }
+  //   },
   devServer: {
     before (app) {
       app.get('/api/getDiscList', function (req, res) {
